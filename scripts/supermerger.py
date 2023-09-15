@@ -397,6 +397,7 @@ def on_ui_tabs():
                 )
     
         import lora
+        import lycoris
 
         with gr.Tab("Elements", elem_id="tab_deep"):
                 with gr.Row():
@@ -404,8 +405,11 @@ def on_ui_tabs():
                     create_refresh_button(smd_model_a, sd_models.list_models,lambda: {"choices": sd_models.checkpoint_tiles()},"refresh_checkpoint_Z")    
                     smd_loadkeys = gr.Button(value="load keys",variant='primary')
                 with gr.Row():
-                    smd_lora = gr.Dropdown(list(lora.available_loras.keys()),elem_id="model_converter_model_name",label="LoRA",interactive=True)
-                    create_refresh_button(smd_lora, lora.list_available_loras, lambda: {"choices": list(lora.available_loras.keys())},"refresh_checkpoint_Z")
+                    smd_lora = gr.Dropdown(list(lora.available_loras.keys() | lycoris.available_lycos.keys()),elem_id="model_converter_model_name",label="LoRA",interactive=True)
+                    def refreshlora():
+                        lora.list_available_loras
+                        lycoris.list_available_lycos
+                    create_refresh_button(smd_lora, refreshlora(), lambda: {"choices": list(lora.available_loras.keys() | lycoris.available_lycos.keys())},"refresh_checkpoint_Z")
                     smd_loadkeys_l = gr.Button(value="load keys",variant='primary')
                 with gr.Row():
                     keys = gr.Dataframe(headers=["No.","block","key"],)
@@ -919,7 +923,12 @@ def modeltype(sd):
 def loadkeys(model_a, lora):
     if lora:
         import lora
-        sd = sd_models.read_state_dict(lora.available_loras[model_a].filename,"cpu")
+        import lycoris
+        try:
+            ns = lora.available_loras[model_a].filename
+        except:
+            ns = lycoris.available_lycos[model_a].filename
+        sd = sd_models.read_state_dict(ns,"cpu")
     else:
         sd = loadmodel(model_a)
     keys = []

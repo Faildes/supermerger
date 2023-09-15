@@ -38,8 +38,10 @@ def to26(ratios):
 
 def on_ui_tabs():
     import lora
+    import lycoris
     global selectable
-    selectable = [x[0] for x in lora.available_loras.items()]
+    lorat = lora.available_loras.items() | lycoris.available_lycos.items()
+    selectable = [x[0] for x in lorat]
     sml_path_root = scripts.basedir()
     LWEIGHTSPRESETS="\
     NONE:0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0\n\
@@ -123,9 +125,11 @@ def on_ui_tabs():
 
         def updateloras():
             lora.list_available_loras()
+            lycoris.list_available_lycos()
             names = []
             dels = []
-            for n in  lora.available_loras.items():
+            lorat = lora.available_loras.items() | lycoris.available_lycos.items()
+            for n in lorat:
                 if n[0] not in llist:llist[n[0]] = ""
                 names.append(n[0])
             for l in list(llist.keys()):
@@ -139,10 +143,11 @@ def on_ui_tabs():
 
         def calculatedim():
             print("listing dimensions...")
-            for n in  tqdm(lora.available_loras.items()):
+            lorat = lora.available_loras.items() | lycoris.available_lycos.items()
+            for n in tqdm(lorat):
                 if n[0] in llist:
                     if llist[n[0]] !="": continue
-                c_lora = lora.available_loras.get(n[0], None) 
+                c_lora = lora.available_loras.get(n[0], None) or lycoris.available_lycos.get(n[0], None)
                 d,t,s = dimgetter(c_lora.filename)
                 if t == "LoCon":
                     if len(list(set(d.values()))) > 1:
@@ -225,11 +230,12 @@ def makelora(model_a,model_b,dim,saveto,settings,alpha,beta,precision):
 def lmerge(loranames,loraratioss,settings,filename,dim,precision):
     try:
         import lora
-        loras_on_disk = [lora.available_loras.get(name, None) for name in loranames]
+        import lycoris
+        loras_on_disk = [lora.available_loras.get(name, None) or lycoris.available_lycos.get(name, None) for name in loranames]
         if any([x is None for x in loras_on_disk]):
             lora.list_available_loras()
-
-            loras_on_disk = [lora.available_loras.get(name, None) for name in loranames]
+            lycoris.list_available_lycos()
+            loras_on_disk = [lora.available_loras.get(name, None) or lycoris.available_lycos.get(name, None) for name in loranames]
 
         lnames = loranames.split(",")
 
@@ -253,7 +259,7 @@ def lmerge(loranames,loraratioss,settings,filename,dim,precision):
                     ratio = to26(ratio)
                 else:ratio = [float(n[1])]*26
             else:ratio = [float(n[1])]*26
-            c_lora = lora.available_loras.get(n[0], None) 
+            c_lora = lora.available_loras.get(n[0], None) or lycoris.available_lycos.get(n[0], None)
             ln.append(c_lora.filename)
             lr.append(ratio)
             d, t, s = dimgetter(c_lora.filename)
@@ -505,6 +511,7 @@ def pluslora(lnames,loraratios,settings,output,model,precision):
 
     print("Plus LoRA start")
     import lora
+    import lycoris
     lnames = lnames.split(",")
 
     for i, n in enumerate(lnames):
@@ -526,7 +533,7 @@ def pluslora(lnames,loraratios,settings,output,model,precision):
                 ratio = to26(ratio)
             else:ratio = [float(n[1])]*26
         else:ratio = [float(n[1])]*26
-        c_lora = lora.available_loras.get(n[0], None) 
+        c_lora = lora.available_loras.get(n[0], None) or lycoris.available_lycos.get(n[0], None)
         names.append(n[0])
         filenames.append(c_lora.filename)
         lweis.append(ratio)
